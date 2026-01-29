@@ -1,23 +1,37 @@
 # LangChain Hello World (FastAPI)
 
-## Requisitos
+![CI](https://github.com/edubertin/projeto_codex/actions/workflows/ci.yml/badge.svg)
+
+## Overview
+Starter kit with FastAPI + LangChain + Docker, ready for local use and CI.
+
+## Requirements
 - Docker Desktop
+- Python 3.11+ (optional for local dev)
 
-## Configuracao
-1. Edite `.env` e preencha `OPENAI_API_KEY`.
+## Quickstart
+1. Copy `.env.example` to `.env` and set `OPENAI_API_KEY`.
+2. Run with Docker:
 
-## Rodar
 ```bash
 docker compose up --build
 ```
 
+Open `http://localhost:8000/`.
+
 ## Endpoints
-- `/` pagina estatica
-- `/api/hello` retorna a resposta do LLM
+- `/` Static page
+- `/api/hello` LLM response
 - `/docs` Swagger
 - `/redoc` ReDoc
-- `/health` healthcheck
-- `/ready` readiness
+- `/health` Healthcheck
+- `/ready` Readiness
 
-## Observabilidade
-- Logs incluem `x-request-id` e duracao da requisicao.
+## Development
+```bash
+pip install -r requirements.txt -r requirements-dev.txt
+pytest
+```
+
+## Security
+Do not commit secrets. Use `.env` (gitignored) and `.env.example` as template.
