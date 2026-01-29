@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LangChain Hello</title>
+    <style>
+      body { font-family: Arial, sans-serif; padding: 24px; background: #f7f7f7; }
+      .card { max-width: 640px; margin: 0 auto; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); }
+      button { padding: 10px 14px; border: none; border-radius: 8px; background: #1f6feb; color: #fff; cursor: pointer; }
+      pre { white-space: pre-wrap; background: #f2f4f8; padding: 12px; border-radius: 8px; }
+      .links a { margin-right: 12px; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>Hello World (LangChain + FastAPI)</h1>
+      <p>Click para chamar o backend e obter a resposta do LLM.</p>
+      <div class="links">
+        <a href="/docs" target="_blank" rel="noreferrer">Swagger</a>
+        <a href="/redoc" target="_blank" rel="noreferrer">ReDoc</a>
+        <a href="/openapi.json" target="_blank" rel="noreferrer">OpenAPI JSON</a>
+      </div>
+      <button id="btn">Chamar /api/hello</button>
+      <pre id="output">(aguardando)</pre>
+    </div>
+
+    <script>
+      const btn = document.getElementById('btn');
+      const output = document.getElementById('output');
+
+      btn.addEventListener('click', async () => {
+        output.textContent = 'carregando...';
+        try {
+          const res = await fetch('/api/hello');
+          const data = await res.json();
+          output.textContent = data.message || '(sem resposta)';
+        } catch (err) {
+          output.textContent = 'erro: ' + err;
+        }
+      });
+    </script>
+  </body>
+</html>
