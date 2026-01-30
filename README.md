@@ -5,13 +5,14 @@
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, metrics, tracing hooks, and security guards.
+A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, metrics, tracing hooks, security guards, and a Postgres + pgvector RAG starter.
 
 ## Features
 - FastAPI app with Swagger/ReDoc
 - LangChain + OpenAI ready
 - Static `index.html`
 - API versioning (`/v1/...`) with legacy route
+- RAG starter (Postgres + pgvector)
 - Health and readiness endpoints
 - Prometheus metrics (`/metrics`)
 - Optional OpenTelemetry tracing
@@ -25,25 +26,26 @@ A minimal but production-ready starter with FastAPI + LangChain + Docker. Includ
 - Python 3.11
 - FastAPI + Uvicorn
 - LangChain + OpenAI
+- Postgres + pgvector
 - Docker + Docker Compose
 
 ## Project Structure
 ```
 .
-?? main.py
-?? settings.py
-?? static/
-?  ?? index.html
-?? tests/
-?  ?? test_health.py
-?? docker-compose.yml
-?? Dockerfile
-?? requirements.txt
-?? requirements-dev.txt
-?? .env.example
-?? .pre-commit-config.yaml
-?? .gitleaks.toml
-?? README.md
+├─ main.py
+├─ settings.py
+├─ static/
+│  └─ index.html
+├─ tests/
+│  └─ test_health.py
+├─ docker-compose.yml
+├─ Dockerfile
+├─ requirements.txt
+├─ requirements-dev.txt
+├─ .env.example
+├─ .pre-commit-config.yaml
+├─ .gitleaks.toml
+└─ README.md
 ```
 
 ## Quickstart (Docker)
@@ -65,6 +67,8 @@ pytest
 ## API Endpoints
 - `/` Static page
 - `/v1/hello` LLM response (versioned)
+- `/v1/ingest` Ingest texts into the vector DB
+- `/v1/query` Query similar chunks from the vector DB
 - `/api/hello` Legacy route (deprecated)
 - `/docs` Swagger
 - `/redoc` ReDoc
@@ -80,6 +84,9 @@ Environment variables (see `.env.example`):
 - `REQUEST_TIMEOUT`
 - `MAX_RETRIES`
 - `ALLOWED_ORIGINS`
+- `DATABASE_URL`
+- `RAG_COLLECTION`
+- `EMBEDDING_MODEL` (default: `text-embedding-3-small`)
 - `ENABLE_RATE_LIMIT`
 - `RATE_LIMIT_PER_MINUTE`
 - `ENABLE_METRICS`
@@ -90,6 +97,11 @@ Environment variables (see `.env.example`):
 ## Observability
 - Metrics: scrape `http://localhost:8000/metrics` with Prometheus.
 - Tracing: set `ENABLE_TRACING=true` and `OTEL_EXPORTER_OTLP_ENDPOINT` (OTLP/HTTP).
+
+## RAG Quick Test (via UI)
+1. Start with Docker: `docker compose up --build`
+2. Open `http://localhost:8000/`
+3. Use the RAG section to ingest a few lines and query
 
 ## Security
 - Never commit secrets. Use `.env` (gitignored).
