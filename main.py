@@ -3,14 +3,18 @@ import logging
 import time
 import uuid
 from threading import Lock
-from typing import Callable, Dict, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage
+from langchain_postgres import PGVector
+from pydantic import BaseModel
+import psycopg
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -66,6 +70,8 @@ REQUEST_LATENCY = Histogram(
 
 _rate_lock = Lock()
 _rate_state: Dict[str, Tuple[float, int]] = {}
+_vector_lock = Lock()
+_vector_store: Optional[PGVector] = None
 
 
 def setup_tracing(app_instance: FastAPI) -> None:
@@ -84,6 +90,47 @@ def setup_tracing(app_instance: FastAPI) -> None:
 
 
 setup_tracing(app)
+
+
+class IngestRequest(BaseModel):
+    texts: List[str]
+    metadatas: Optional[List[Dict]] = None
+
+
+class QueryRequest(BaseModel):
+    query: str
+    k: int = 4
+
+
+def _psycopg_url() -> str:
+    if settings.database_url.startswith("postgresql+psycopg://"):
+        return settings.database_url.replace("postgresql+psycopg://", "postgresql://")
+    return settings.database_url
+
+
+def ensure_pgvector() -> None:
+    with psycopg.connect(_psycopg_url()) as conn:
+        conn.execute("CREATE EXTENSION IF NOT EXISTS vector;")
+        conn.commit()
+
+
+def get_vector_store() -> PGVector:
+    global _vector_store
+    if _vector_store is not None:
+        return _vector_store
+
+    with _vector_lock:
+        if _vector_store is not None:
+            return _vector_store
+        ensure_pgvector()
+        embeddings = OpenAIEmbeddings(model=settings.embedding_model)
+        _vector_store = PGVector(
+            embeddings=embeddings,
+            collection_name=settings.rag_collection,
+            connection=settings.database_url,
+            use_jsonb=True,
+        )
+        return _vector_store
 
 
 def get_client_ip(request: Request) -> str:
@@ -170,6 +217,34 @@ def get_llm_response() -> str:
 def index() -> HTMLResponse:
     with open("static/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(content=f.read())
+
+
+@app.post("/v1/ingest")
+def ingest(req: IngestRequest) -> dict:
+    if not req.texts:
+        raise HTTPException(status_code=400, detail="texts is required")
+    metadatas = req.metadatas or [{} for _ in req.texts]
+    if len(metadatas) != len(req.texts):
+        raise HTTPException(status_code=400, detail="metadatas length mismatch")
+
+    docs = [
+        Document(page_content=text, metadata=meta or {})
+        for text, meta in zip(req.texts, metadatas)
+    ]
+    store = get_vector_store()
+    ids = store.add_documents(docs)
+    return {"ingested": len(ids)}
+
+
+@app.post("/v1/query")
+def query(req: QueryRequest) -> dict:
+    store = get_vector_store()
+    results = store.similarity_search_with_score(req.query, k=req.k)
+    payload = [
+        {"text": doc.page_content, "metadata": doc.metadata, "score": score}
+        for doc, score in results
+    ]
+    return {"query": req.query, "results": payload}
 
 
 @app.get("/v1/hello")
