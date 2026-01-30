@@ -7,6 +7,9 @@
 
 **NodoOne Starter Pack** is a production-ready FastAPI + LangChain kit with Postgres + pgvector RAG, observability, and CI. Designed to be the base for multiple applications.
 
+## Screenshot
+![NodoOne Starter Pack UI](assets/images/image.png)
+
 ## What you get
 - FastAPI app with Swagger/ReDoc
 - LangChain + OpenAI ready
