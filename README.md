@@ -4,13 +4,16 @@
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, and a static frontend.
+A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, metrics, and tracing hooks.
 
 ## Features
 - FastAPI app with Swagger/ReDoc
 - LangChain + OpenAI ready
 - Static `index.html`
 - Health and readiness endpoints
+- Prometheus metrics (`/metrics`)
+- Optional OpenTelemetry tracing
+- Simple rate limiting
 - Structured logs + request-id
 - Dockerized with non-root user + healthcheck
 - CI with GitHub Actions (pytest)
@@ -59,6 +62,7 @@ pytest
 - `/api/hello` LLM response
 - `/docs` Swagger
 - `/redoc` ReDoc
+- `/metrics` Prometheus metrics
 - `/health` Healthcheck
 - `/ready` Readiness
 
@@ -70,6 +74,16 @@ Environment variables (see `.env.example`):
 - `REQUEST_TIMEOUT`
 - `MAX_RETRIES`
 - `ALLOWED_ORIGINS`
+- `ENABLE_RATE_LIMIT`
+- `RATE_LIMIT_PER_MINUTE`
+- `ENABLE_METRICS`
+- `ENABLE_TRACING`
+- `OTEL_SERVICE_NAME`
+- `OTEL_EXPORTER_OTLP_ENDPOINT`
+
+## Observability
+- Metrics: scrape `http://localhost:8000/metrics` with Prometheus.
+- Tracing: set `ENABLE_TRACING=true` and `OTEL_EXPORTER_OTLP_ENDPOINT` (OTLP/HTTP).
 
 ## Security
 - Never commit secrets. Use `.env` (gitignored).
