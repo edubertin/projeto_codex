@@ -1,22 +1,25 @@
 # LangChain Hello World (FastAPI)
 
 ![CI](https://github.com/edubertin/projeto_codex/actions/workflows/ci.yml/badge.svg)
+![Secret Scan](https://github.com/edubertin/projeto_codex/actions/workflows/secret-scan.yml/badge.svg)
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, metrics, and tracing hooks.
+A minimal but production-ready starter with FastAPI + LangChain + Docker. Includes Swagger, health checks, CI, metrics, tracing hooks, and security guards.
 
 ## Features
 - FastAPI app with Swagger/ReDoc
 - LangChain + OpenAI ready
 - Static `index.html`
+- API versioning (`/v1/...`) with legacy route
 - Health and readiness endpoints
 - Prometheus metrics (`/metrics`)
 - Optional OpenTelemetry tracing
-- Simple rate limiting
+- Simple per-route rate limiting (v1 routes)
 - Structured logs + request-id
 - Dockerized with non-root user + healthcheck
-- CI with GitHub Actions (pytest)
+- CI + secret scan (Gitleaks)
+- Dependabot updates
 
 ## Tech Stack
 - Python 3.11
@@ -38,6 +41,8 @@ A minimal but production-ready starter with FastAPI + LangChain + Docker. Includ
 ?? requirements.txt
 ?? requirements-dev.txt
 ?? .env.example
+?? .pre-commit-config.yaml
+?? .gitleaks.toml
 ?? README.md
 ```
 
@@ -59,7 +64,8 @@ pytest
 
 ## API Endpoints
 - `/` Static page
-- `/api/hello` LLM response
+- `/v1/hello` LLM response (versioned)
+- `/api/hello` Legacy route (deprecated)
 - `/docs` Swagger
 - `/redoc` ReDoc
 - `/metrics` Prometheus metrics
@@ -87,7 +93,8 @@ Environment variables (see `.env.example`):
 
 ## Security
 - Never commit secrets. Use `.env` (gitignored).
-- Rotate keys if accidentally exposed.
+- Run `pre-commit install` to enable local secret scanning.
+- CI runs secret scanning on each push/PR.
 
 ## Contributing
 See `.github/CONTRIBUTING.md`.

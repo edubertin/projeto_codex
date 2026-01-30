@@ -90,9 +90,13 @@ def get_client_ip(request: Request) -> str:
     return "unknown"
 
 
+def should_rate_limit(path: str) -> bool:
+    return path.startswith("/v1/")
+
+
 @app.middleware("http")
 async def rate_limit_middleware(request: Request, call_next: Callable):
-    if not settings.enable_rate_limit:
+    if not settings.enable_rate_limit or not should_rate_limit(request.url.path):
         return await call_next(request)
 
     key = get_client_ip(request)
@@ -163,9 +167,14 @@ def index() -> HTMLResponse:
         return HTMLResponse(content=f.read())
 
 
+@app.get("/v1/hello")
+def hello_v1() -> dict:
+    return {"message": get_llm_response(), "version": "v1"}
+
+
 @app.get("/api/hello")
-def hello() -> dict:
-    return {"message": get_llm_response()}
+def hello_legacy() -> dict:
+    return {"message": get_llm_response(), "deprecated": True}
 
 
 @app.get("/metrics")

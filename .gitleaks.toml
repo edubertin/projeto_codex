@@ -1,0 +1,15 @@
+# Gitleaks configuration
+[allowlist]
+  description = "Allowlist"
+  paths = [
+    "^README.md$",
+    "^LICENSE$",
+    "^.github/",
+    "^static/"
+  ]
+
+[[rules]]
+  id = "openai-api-key"
+  description = "Detect OpenAI API keys"
+  regex = "(?i)sk-[A-Za-z0-9]{20,}"
+  tags = ["key", "openai"]
