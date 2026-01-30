@@ -15,6 +15,7 @@ from langchain_core.messages import HumanMessage
 from langchain_postgres import PGVector
 from pydantic import BaseModel
 import psycopg
+import redis
 from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
@@ -72,6 +73,7 @@ _rate_lock = Lock()
 _rate_state: Dict[str, Tuple[float, int]] = {}
 _vector_lock = Lock()
 _vector_store: Optional[PGVector] = None
+_redis_client: Optional[redis.Redis] = None
 
 
 def setup_tracing(app_instance: FastAPI) -> None:
@@ -118,7 +120,6 @@ def get_vector_store() -> PGVector:
     global _vector_store
     if _vector_store is not None:
         return _vector_store
-
     with _vector_lock:
         if _vector_store is not None:
             return _vector_store
@@ -131,6 +132,21 @@ def get_vector_store() -> PGVector:
             use_jsonb=True,
         )
         return _vector_store
+
+
+def get_redis() -> Optional[redis.Redis]:
+    global _redis_client
+    if _redis_client is not None:
+        return _redis_client
+    try:
+        _redis_client = redis.Redis.from_url(
+            settings.redis_url,
+            decode_responses=True,
+        )
+        _redis_client.ping()
+        return _redis_client
+    except Exception:
+        return None
 
 
 def get_client_ip(request: Request) -> str:
@@ -238,13 +254,23 @@ def ingest(req: IngestRequest) -> dict:
 
 @app.post("/v1/query")
 def query(req: QueryRequest) -> dict:
+    cache_key = f"rag:query:{req.query}:{req.k}"
+    r = get_redis()
+    if r:
+        cached = r.get(cache_key)
+        if cached:
+            return json.loads(cached)
+
     store = get_vector_store()
     results = store.similarity_search_with_score(req.query, k=req.k)
     payload = [
         {"text": doc.page_content, "metadata": doc.metadata, "score": score}
         for doc, score in results
     ]
-    return {"query": req.query, "results": payload}
+    response = {"query": req.query, "results": payload}
+    if r:
+        r.setex(cache_key, settings.cache_ttl_seconds, json.dumps(response))
+    return response
 
 
 @app.get("/v1/hello")
@@ -263,6 +289,28 @@ def metrics() -> Response:
         return Response(status_code=404)
     data = generate_latest()
     return Response(content=data, media_type=CONTENT_TYPE_LATEST)
+
+
+@app.get("/api/dashboard")
+def dashboard() -> dict:
+    r = get_redis()
+    cache_ok = False
+    if r:
+        try:
+            r.ping()
+            cache_ok = True
+        except Exception:
+            cache_ok = False
+    return {
+        "cache": {
+            "enabled": r is not None,
+            "healthy": cache_ok,
+            "ttl_seconds": settings.cache_ttl_seconds,
+        },
+        "rag": {
+            "collection": settings.rag_collection,
+        },
+    }
 
 
 @app.get("/health")

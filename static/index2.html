@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-br">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -15,8 +15,6 @@
         --accent-2: #9a7bff;
         --border: rgba(255, 255, 255, 0.08);
         --glow: rgba(126, 240, 255, 0.35);
-        --ok: #65d68c;
-        --warn: #ffcc66;
       }
 
       * { box-sizing: border-box; }
@@ -44,7 +42,10 @@
         mix-blend-mode: screen;
       }
 
-      .container { max-width: 1100px; margin: 0 auto; }
+      .container {
+        max-width: 1100px;
+        margin: 0 auto;
+      }
 
       .header {
         display: flex;
@@ -53,7 +54,11 @@
         margin-bottom: 22px;
       }
 
-      .brand { display: flex; align-items: center; gap: 12px; }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
 
       .orb {
         width: 14px;
@@ -196,22 +201,10 @@
 
       .row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
-      .hero-content { position: relative; z-index: 1; }
-
-      .stat {
-        display: grid;
-        gap: 6px;
-        padding: 12px;
-        border-radius: 12px;
-        border: 1px solid var(--border);
-        background: var(--panel-strong);
+      .hero-content {
+        position: relative;
+        z-index: 1;
       }
-
-      .stat-label { color: var(--muted); font-size: 12px; }
-      .stat-value { font-size: 16px; font-weight: 600; }
-      .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-      .dot.ok { background: var(--ok); }
-      .dot.warn { background: var(--warn); }
     </style>
   </head>
   <body>
@@ -220,7 +213,7 @@
       <header class="header">
         <div class="brand">
           <span class="orb"></span>
-          <strong>NodoOne Starter Pack</strong>
+          <strong>Starter RAG</strong>
         </div>
         <span class="pill">Postgres + pgvector</span>
       </header>
@@ -229,63 +222,42 @@
         <div class="liquid"></div>
         <div class="hero-content">
           <h1>NodoOne Starter Pack</h1>
-          <p>A modern panel to validate LLM, RAG, and cache with a clean, visual flow.</p>
+          <p>Um painel moderno para validar LLM e RAG com um fluxo simples e visual.</p>
           <div class="row" style="margin-top: 10px;">
             <div class="links">
               <a href="/docs" target="_blank" rel="noreferrer">Swagger</a>
               <a href="/redoc" target="_blank" rel="noreferrer">ReDoc</a>
               <a href="/openapi.json" target="_blank" rel="noreferrer">OpenAPI JSON</a>
             </div>
-            <button id="btn">Call /api/hello</button>
+            <button id="btn">Chamar /api/hello</button>
           </div>
         </div>
       </section>
 
       <section class="grid">
         <div class="card stack">
-          <h2 class="section-title">RAG - Ingestion</h2>
-          <p class="muted">Add texts (one per line) into the vector database.</p>
-          <textarea id="ingestText" rows="6" placeholder="Example:\nLangChain is a library for LLM apps.\nPostgres with pgvector stores embeddings."></textarea>
-          <button id="btnIngest">Send to /v1/ingest</button>
-          <pre id="ingestOut">(no ingestion yet)</pre>
+          <h2 class="section-title">RAG - Ingestao</h2>
+          <p class="muted">Adicione textos (um por linha) no banco vetorial.</p>
+          <textarea id="ingestText" rows="6" placeholder="Ex:\nLangChain e uma biblioteca para apps com LLMs.\nO Postgres com pgvector armazena embeddings."></textarea>
+          <button id="btnIngest">Enviar para /v1/ingest</button>
+          <pre id="ingestOut">(sem ingestao)</pre>
         </div>
 
         <div class="card stack">
-          <h2 class="section-title">RAG - Query</h2>
-          <p class="muted">Test semantic search with your texts.</p>
-          <label for="queryText">Question</label>
-          <input id="queryText" placeholder="Example: What is pgvector?" />
+          <h2 class="section-title">RAG - Consulta</h2>
+          <p class="muted">Teste a busca semantica com seus textos.</p>
+          <label for="queryText">Pergunta</label>
+          <input id="queryText" placeholder="Ex: O que e pgvector?" />
           <label for="queryK">Top K</label>
           <input id="queryK" type="number" min="1" max="10" value="4" />
-          <button id="btnQuery">Send to /v1/query</button>
-          <pre id="queryOut">(no query yet)</pre>
+          <button id="btnQuery">Enviar para /v1/query</button>
+          <pre id="queryOut">(sem consulta)</pre>
         </div>
       </section>
 
-      <section class="grid" style="margin-top: 18px;">
-        <div class="card stack">
-          <h2 class="section-title">Dashboard</h2>
-          <p class="muted">Cache status and current configuration.</p>
-          <div class="grid">
-            <div class="stat">
-              <div class="stat-label">Redis</div>
-              <div class="stat-value" id="redisStatus"><span class="dot warn"></span>carregando...</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">Cache TTL</div>
-              <div class="stat-value" id="cacheTtl">-</div>
-            </div>
-            <div class="stat">
-              <div class="stat-label">RAG Collection</div>
-              <div class="stat-value" id="ragCollection">-</div>
-            </div>
-          </div>
-        </div>
-
-        <section class="card">
-          <h2 class="section-title">LLM Response</h2>
-          <pre id="output">(waiting)</pre>
-        </section>
+      <section class="card" style="margin-top: 18px;">
+        <h2 class="section-title">Resposta do LLM</h2>
+        <pre id="output">(aguardando)</pre>
       </section>
     </div>
 
@@ -299,24 +271,21 @@
       const queryText = document.getElementById('queryText');
       const queryK = document.getElementById('queryK');
       const queryOut = document.getElementById('queryOut');
-      const redisStatus = document.getElementById('redisStatus');
-      const cacheTtl = document.getElementById('cacheTtl');
-      const ragCollection = document.getElementById('ragCollection');
 
       btn.addEventListener('click', async () => {
-        output.textContent = 'loading...';
+        output.textContent = 'carregando...';
         try {
           const res = await fetch('/api/hello');
           const data = await res.json();
           output.textContent = data.message || '(sem resposta)';
         } catch (err) {
-          output.textContent = 'error: ' + err;
+          output.textContent = 'erro: ' + err;
         }
       });
 
       btnIngest.addEventListener('click', async () => {
         const lines = ingestText.value.split('\n').map(s => s.trim()).filter(Boolean);
-        ingestOut.textContent = 'loading...';
+        ingestOut.textContent = 'carregando...';
         try {
           const res = await fetch('/v1/ingest', {
             method: 'POST',
@@ -326,12 +295,12 @@
           const data = await res.json();
           ingestOut.textContent = JSON.stringify(data, null, 2);
         } catch (err) {
-          ingestOut.textContent = 'error: ' + err;
+          ingestOut.textContent = 'erro: ' + err;
         }
       });
 
       btnQuery.addEventListener('click', async () => {
-        queryOut.textContent = 'loading...';
+        queryOut.textContent = 'carregando...';
         try {
           const res = await fetch('/v1/query', {
             method: 'POST',
@@ -341,33 +310,9 @@
           const data = await res.json();
           queryOut.textContent = JSON.stringify(data, null, 2);
         } catch (err) {
-          queryOut.textContent = 'error: ' + err;
+          queryOut.textContent = 'erro: ' + err;
         }
       });
-
-      async function loadDashboard() {
-        try {
-          const res = await fetch('/api/dashboard');
-          const data = await res.json();
-          const cache = data.cache || {};
-          const rag = data.rag || {};
-
-          if (cache.healthy) {
-            redisStatus.innerHTML = '<span class="dot ok"></span>online';
-          } else if (cache.enabled) {
-            redisStatus.innerHTML = '<span class="dot warn"></span>degraded';
-          } else {
-            redisStatus.innerHTML = '<span class="dot warn"></span>offline';
-          }
-
-          cacheTtl.textContent = cache.ttl_seconds ? `${cache.ttl_seconds}s` : '-';
-          ragCollection.textContent = rag.collection || '-';
-        } catch (err) {
-          redisStatus.innerHTML = '<span class="dot warn"></span>error';
-        }
-      }
-
-      loadDashboard();
     </script>
   </body>
 </html>

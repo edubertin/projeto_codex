@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/Python-3.11%2B-blue)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
-**NodoOne Starter Pack** is a production-ready FastAPI + LangChain kit with Postgres + pgvector RAG, observability, and CI. Designed to be the base for multiple applications.
+**NodoOne Starter Pack** is a production-ready FastAPI + LangChain kit with Postgres + pgvector RAG, Redis cache, observability, and CI. Designed to be the base for multiple applications.
 
 ## Screenshot
 ![NodoOne Starter Pack UI](assets/images/image.png)
@@ -14,6 +14,7 @@
 - FastAPI app with Swagger/ReDoc
 - LangChain + OpenAI ready
 - Postgres + pgvector RAG (ingest + query)
+- Redis cache for RAG queries
 - Static UI to validate LLM + RAG
 - API versioning (`/v1/...`) with legacy route
 - Health and readiness endpoints
@@ -30,25 +31,27 @@
 - FastAPI + Uvicorn
 - LangChain + OpenAI
 - Postgres + pgvector
+- Redis
 - Docker + Docker Compose
 
 ## Project Structure
 ```
 .
-?? main.py
-?? settings.py
-?? static/
-?  ?? index.html
-?? tests/
-?  ?? test_health.py
-?? docker-compose.yml
-?? Dockerfile
-?? requirements.txt
-?? requirements-dev.txt
-?? .env.example
-?? .pre-commit-config.yaml
-?? .gitleaks.toml
-?? README.md
+├─ main.py
+├─ settings.py
+├─ static/
+│  ├─ index.html
+│  └─ index2.html
+├─ tests/
+│  └─ test_health.py
+├─ docker-compose.yml
+├─ Dockerfile
+├─ requirements.txt
+├─ requirements-dev.txt
+├─ .env.example
+├─ .pre-commit-config.yaml
+├─ .gitleaks.toml
+└─ README.md
 ```
 
 ## Quickstart (Docker)
@@ -73,6 +76,7 @@ pytest
 - `/v1/ingest` Ingest texts into the vector DB
 - `/v1/query` Query similar chunks from the vector DB
 - `/api/hello` Legacy route (deprecated)
+- `/api/dashboard` Cache + RAG status
 - `/docs` Swagger
 - `/redoc` ReDoc
 - `/metrics` Prometheus metrics
@@ -97,6 +101,8 @@ Environment variables (see `.env.example`):
 - `RAG_COLLECTION`
 - `ENABLE_RATE_LIMIT`
 - `RATE_LIMIT_PER_MINUTE`
+- `REDIS_URL`
+- `CACHE_TTL_SECONDS`
 - `ENABLE_METRICS`
 - `ENABLE_TRACING`
 - `OTEL_SERVICE_NAME`
