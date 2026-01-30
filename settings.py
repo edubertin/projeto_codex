@@ -13,6 +13,8 @@ class Settings(BaseSettings):
     app_port: int = 8000
     database_url: str = "postgresql+psycopg://postgres:postgres@db:5432/app"
     rag_collection: str = "documents"
+    redis_url: str = "redis://redis:6379/0"
+    cache_ttl_seconds: int = 300
 
     # Rate limiting
     enable_rate_limit: bool = True
